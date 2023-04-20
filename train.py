@@ -1,6 +1,6 @@
 import config
 from dataset import RirDataModule
-from model import LitCNN
+from model import LitCNN, CallbackLog_loss_per_epoch
 import lightning.pytorch as pl
 from lightning.pytorch.callbacks import EarlyStopping, ModelCheckpoint
 from lightning.pytorch.loggers import TensorBoardLogger
@@ -8,6 +8,8 @@ from lightning.pytorch.loggers import TensorBoardLogger
 
 from lightning.pytorch.callbacks import Timer
 timer = Timer(duration="00:12:00:00")
+
+pl.seed_everything(42, workers=True)
 
 if __name__ == "__main__":
 
@@ -38,14 +40,19 @@ if __name__ == "__main__":
     # %% TRAINING Set Up
     # Set the training options:
     # -------------------------
+    
+
+
+    
     trainer = pl.Trainer(
         accelerator=config.ACCELERATOR,
         devices=config.DEVICES,
         min_epochs=1,
         max_epochs=config.NUM_EPOCHS,
         precision=config.PRECISION,
-        callbacks=[early_stop_callback, timer, checkpoint],
+        callbacks=[early_stop_callback, timer, checkpoint, CallbackLog_loss_per_epoch()],
         logger=logger,
+        deterministic=True,
         )
 
     trainer.fit(model, dm)
