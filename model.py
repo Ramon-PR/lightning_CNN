@@ -1,5 +1,6 @@
 import lightning.pytorch as pl
 import torch
+import torchmetrics
 
 def dim_after_filter(dim_in, dim_kernel, pad, stripe):
     return int((dim_in + 2*pad - dim_kernel)/stripe) + 1
@@ -56,7 +57,7 @@ class LitCNN(pl.LightningModule):
         str1, str2 = 1, 1
 
         kernel_maxpool, str_maxpool = 2, 2
-
+        self.criterion = torchmetrics.MeanSquaredError()
         self.lr = learning_rate
         self.Hin = Hin
         self.Win = Win
@@ -99,7 +100,7 @@ class LitCNN(pl.LightningModule):
         target = target.view(target.shape[0],-1)
         y_pred = self(image)
         
-        loss = torch.nn.functional.mse_loss(y_pred, target)
+        loss = self.criterion(y_pred, target)
         return loss
 
 
