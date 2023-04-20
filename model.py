@@ -1,6 +1,7 @@
 import lightning.pytorch as pl
 import torch
 import torchmetrics
+import config
 
 def dim_after_filter(dim_in, dim_kernel, pad, stripe):
     return int((dim_in + 2*pad - dim_kernel)/stripe) + 1
@@ -50,7 +51,7 @@ def blockRelUMinP(chan_in, chan_out, kernel_size=3, pad1=1, str1=1, kernel_minpo
 class LitCNN(pl.LightningModule):
     def __init__(self, chan_in=1, Hin=32, Win=32, Hout=32, Wout=32, learning_rate=1e-3):
         super().__init__()
-
+        self.training_step_outputs = []
         n_filters1, n_filters2 = 5, 5
         kernel_size1, kernel_size2 = 3, 5
         pad1, pad2 = 1, 2
@@ -114,6 +115,8 @@ class LitCNN(pl.LightningModule):
         # self.log_dict({'train_loss': loss}, 
                       # on_step=True, on_epoch=True, 
                       # prog_bar=True, logger=True)
+        self.training_step_outputs.append(loss)
+        
         return loss
 
 
@@ -135,3 +138,24 @@ class LitCNN(pl.LightningModule):
         # Logging to TensorBoard (if installed) by default
         self.log("test_loss", loss)
         return loss
+    
+    
+class CallbackLog_loss_per_epoch(pl.Callback):
+    def on_train_epoch_end(self, trainer, pl_module):
+        # do something with all training_step outputs, for example:
+        epoch_mean = torch.stack(pl_module.training_step_outputs).mean()
+        # pl_module.log("training_epoch_mean", epoch_mean)
+        trainer.logger.experiment.add_scalar("Loss/Train", epoch_mean, trainer.current_epoch)
+        # free up the memory
+        pl_module.training_step_outputs.clear()
+        if(trainer.current_epoch==1):
+            sampleImg=torch.rand((1,1,config.HIN,config.WIN))
+            trainer.logger.experiment.add_graph(pl_module, sampleImg)
+
+
+
+
+
+
+
+
