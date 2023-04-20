@@ -2,7 +2,7 @@ import config
 from dataset import RirDataModule
 from model import LitCNN
 import lightning.pytorch as pl
-from lightning.pytorch.callbacks import EarlyStopping
+from lightning.pytorch.callbacks import EarlyStopping, ModelCheckpoint
 from lightning.pytorch.loggers import TensorBoardLogger
 
 
@@ -24,7 +24,17 @@ if __name__ == "__main__":
         verbose=False,
         mode='min'
     )
-    
+
+    # TO load a checkpoint:
+    # model = LitCNN.load_from_checkpoint(checkpoint_path="./checkpoints/model-???.ckpt")
+    checkpoint = ModelCheckpoint(
+        dirpath='./checkpoints/',         # where to save the checkpoint
+        filename='model-{val_loss:.5f}',  # name of the model
+        save_top_k=1,                     # save the best k models
+        monitor='val_loss',               # variable to monitor
+        mode='min'                        # that has to be min or max
+    )
+
     # %% TRAINING Set Up
     # Set the training options:
     # -------------------------
@@ -34,7 +44,7 @@ if __name__ == "__main__":
         min_epochs=1,
         max_epochs=config.NUM_EPOCHS,
         precision=config.PRECISION,
-        callbacks=[early_stop_callback, timer],
+        callbacks=[early_stop_callback, timer, checkpoint],
         logger=logger,
         )
 
