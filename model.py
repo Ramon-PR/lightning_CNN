@@ -141,11 +141,21 @@ class LitCNN(pl.LightningModule):
     
     
 class CallbackLog_loss_per_epoch(pl.Callback):
+    
+    def custom_histogram_adder(self, trainer, pl_module):
+        # iterating through all parameters
+        for name,params in pl_module.named_parameters():
+            trainer.logger.experiment.add_histogram(name,params,trainer.current_epoch)
+    
     def on_train_epoch_end(self, trainer, pl_module):
         # do something with all training_step outputs, for example:
         epoch_mean = torch.stack(pl_module.training_step_outputs).mean()
         # pl_module.log("training_epoch_mean", epoch_mean)
         trainer.logger.experiment.add_scalar("Loss/Train", epoch_mean, trainer.current_epoch)
+        
+        # logging histograms
+        self.custom_histogram_adder(trainer, pl_module)
+        
         # free up the memory
         pl_module.training_step_outputs.clear()
         if(trainer.current_epoch==1):
