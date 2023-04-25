@@ -54,6 +54,8 @@ class RirDataModule(pl.LightningDataModule):
                 input_transform = True, target_transform = transformaciones)
             
             self.zea_train, self.zea_val = random_split(zea_full, [0.8, 0.2])
+            # Reference image (first target from the dataset)
+            self.reference_image = zea_full.__getitem__(0)[1]
 
         # Assign test dataset for use in dataloader(s)
         if stage == "test":
