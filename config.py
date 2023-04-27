@@ -12,6 +12,13 @@ NUM_WORKERS = 4
 
 # Model
 N_CHANNELS, HIN, WIN, HOUT, WOUT = 1, 32, 32, 32, 32
+N_FILTERS = [5, 5]
+CONV_KERN = [3, 5]
+CONV_PAD  = [1, 2]
+
+model_name = "LitCNN"
+SAVE_NAME = "CNN_basic"
+
 
 # Compute related
 ACCELERATOR = "cpu"
