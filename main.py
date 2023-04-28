@@ -42,7 +42,7 @@ if __name__ == "__main__":
     model_dict = {}
     model_dict["CNN_basic"] = CNN_basic
     CNN_model = CNNModule(
-        model_name="CNN_basic",
+        model_name=config.MODEL_NAME,
         model_dict=model_dict,
         model_hparams={
             "n_channels" : config.N_CHANNELS ,
