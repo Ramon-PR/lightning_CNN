@@ -47,7 +47,9 @@ if __name__ == "__main__":
         model_hparams={
             "n_channels" : config.N_CHANNELS ,
             "Hin" : config.HIN ,
+            "Win" : config.WIN ,
             "Hout" : config.HOUT ,
+            "Wout" : config.WOUT ,
             "n_filters" : config.N_FILTERS ,
             "conv_kern" : config.CONV_KERN ,
             "conv_pad" : config.CONV_PAD ,
