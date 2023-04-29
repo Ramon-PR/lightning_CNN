@@ -19,11 +19,12 @@ if __name__ == "__main__":
 
     dm = RirDataModule(config.DATA_DIR, config.BATCH_SIZE, config.NUM_WORKERS)
 
-    logger = TensorBoardLogger("tb_logs", name="my_model")
+    logger = TensorBoardLogger("tb_logs", name=config.SAVE_NAME, 
+                               log_graph=True, default_hp_metric=False)
 
     early_stop_callback = EarlyStopping(
-        monitor='val_loss',
-        patience=11,
+        monitor=config.VAR2MONITOR,
+        patience=10,
         verbose=False,
         mode='min'
     )
@@ -34,7 +35,7 @@ if __name__ == "__main__":
         dirpath='./checkpoints/',         # where to save the checkpoint
         filename=config.SAVE_NAME,        # name of the model
         save_top_k=1,                     # save the best k models
-        monitor='train_loss',             # variable to monitor
+        monitor=config.VAR2MONITOR,             # variable to monitor
         mode='min'                        # that has to be min or max
     )
 

@@ -122,7 +122,7 @@ class CallbackLog_loss_per_epoch(pl.Callback):
         
         # free up the memory
         pl_module.training_step_outputs.clear()
-        if(trainer.current_epoch==1):
-            sampleImg=torch.rand((1,1,config.HIN,config.WIN))
-            trainer.logger.experiment.add_graph(pl_module, sampleImg)
+        # if(trainer.current_epoch==1):
+            # sampleImg=torch.rand((1,1,config.HIN,config.WIN))
+            # trainer.logger.experiment.add_graph(pl_module, sampleImg)
 
