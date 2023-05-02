@@ -174,6 +174,10 @@ class CNN_2branch(torch.nn.Module):
         return y
 
 
+model_dict={}
+model_dict["CNN_basic"] = CNN_basic
+model_dict["CNN_2branch"] = CNN_2branch
+
 
 
 

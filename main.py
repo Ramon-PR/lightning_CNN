@@ -1,7 +1,7 @@
 import config
 from dataset import RirDataModule
 from model_system import CNNModule, CallbackLog_loss_per_epoch
-from models import CNN_basic
+from models import model_dict
 
 
 import lightning.pytorch as pl
@@ -40,8 +40,8 @@ if __name__ == "__main__":
     )
 
 
-    model_dict = {}
-    model_dict["CNN_basic"] = CNN_basic
+    # model_dict = {}
+    # model_dict["CNN_basic"] = CNN_basic
     CNN_model = CNNModule(
         model_name=config.MODEL_NAME,
         model_dict=model_dict,
