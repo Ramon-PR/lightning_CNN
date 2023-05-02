@@ -98,7 +98,22 @@ if __name__ == "__main__":
 
     # trainer.validate(model, dm)
     # trainer.test(model, dm)
+    
+    # %%
+    import torch
+    import torchvision
 
+    # Reference image, input
+    img = dm.reference_image
+    # Reference image output
+    img_out = CNN_model(torch.unsqueeze(dm.reference_image, dim=0))
+    img_out = img_out.reshape(1, config.HOUT, config.WOUT)
+    
+    # Make grid with input/output, normalizing the values [0,1]
+    grid = torchvision.utils.make_grid([img, img_out], normalize=True)
+    # Log the image
+    trainer.logger.experiment.add_image(f"input/output (epoch={trainer.current_epoch})", 
+                                        grid, trainer.current_epoch, dataformats="CHW")
 
     # %%query training/validation/test time (in seconds)
     _stage = "train" #train, validate, test
@@ -108,20 +123,4 @@ if __name__ == "__main__":
 
     print(f"Time elapsed in last run  = {b-a}")
     print(f"Time elapsed in all runs  = {c}")
-
-
-# resnetpreact_model, resnetpreact_results = train_model(
-#     model_name="ResNet",
-#     model_hparams={
-#         "num_classes": 10,
-#         "c_hidden": [16, 32, 64],
-#         "num_blocks": [3, 3, 3],
-#         "act_fn_name": "relu",
-#         "block_name": "PreActResNetBlock",
-#     },
-#     optimizer_name="SGD",
-#     optimizer_hparams={"lr": 0.1, "momentum": 0.9, "weight_decay": 1e-4},
-#     save_name="ResNetPreAct",
-# )
-
 
