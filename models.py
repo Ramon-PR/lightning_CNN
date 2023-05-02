@@ -117,6 +117,7 @@ class CNN_basic(torch.nn.Module):
         x = self.conv2(x)
         x = x.view(x.shape[0], -1)
         x = self.fc(x)
+        x = x.view(-1, 1, self.Hout, self.Wout)
         return x
 
 
@@ -171,6 +172,7 @@ class CNN_2branch(torch.nn.Module):
         y = torch.cat((x1.view(x1.shape[0], -1), x2.view(x2.shape[0], -1)), -1)    
 
         y = self.fc(y)
+        y = y.view(-1, 1, self.Hout, self.Wout)
         return y
 
 

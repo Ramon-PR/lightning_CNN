@@ -62,7 +62,6 @@ class CNNModule(pl.LightningModule):
         # training_step defines the train loop.
         # it is independent of forward
         image, target, submask = batch
-        target = target.view(target.shape[0],-1)
         y_pred = self.model(image)
         
         loss = self.criterion(y_pred, target)
