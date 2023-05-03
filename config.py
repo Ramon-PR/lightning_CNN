@@ -1,7 +1,7 @@
 # Training hyperparameters
 LEARNING_RATE = 1e-3
 BATCH_SIZE = 500
-NUM_EPOCHS = 100
+NUM_EPOCHS = 1
 
 # Dataset
 DATA_DIR = r"C:\Users\keris\Desktop\Postdoc"
@@ -17,8 +17,8 @@ N_FILTERS = [5, 5]
 CONV_KERN = [3, 5]
 CONV_PAD  = [1, 2]
 
-MODEL_NAME = "CNN_basic"
-SAVE_NAME = "CNN_5_5_2"
+MODEL_NAME = "DenseNet"
+SAVE_NAME = "DenseNet_test"
 VAR2MONITOR = "train_loss"
 
 
