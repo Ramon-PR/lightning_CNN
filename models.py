@@ -122,6 +122,127 @@ class CNN_basic(torch.nn.Module):
 
 
 
+class CNN_basic_cT(torch.nn.Module):
+    def __init__(self, n_channels: int = 1, 
+        Hin: int = 32, Win: int = 32, 
+        Hout: int = 32, Wout: int = 32,
+        n_filters: list = [5, 5],
+        conv_kern: list = [3, 5],
+        conv_pad: list = [1, 2],
+        act_fn_name="relu",
+        ):
+
+        super().__init__()
+
+        chan_in = n_channels 
+
+        n_filters1, n_filters2 = n_filters
+        kernel_size1, kernel_size2 = conv_kern
+        pad1, pad2 = conv_pad
+        str1, str2 = 1, 1
+
+        kernel_pool, str_pool = 2, 2
+
+        self.Hin = Hin
+        self.Win = Win
+        self.Hout = Hout
+        self.Wout = Wout
+        self.chan_out = chan_in
+        self.n_filters1 = n_filters1
+        self.n_filters2 = n_filters2
+        
+
+        n_outputs = self.Hout* self.Wout
+
+        self.conv1 = blockMaxP(chan_in, n_filters1, act_fn_name, kernel_size1, pad1, str1)
+        H = dim_after_filter(Hin, kernel_size1, pad1, str1)
+        W = dim_after_filter(Win, kernel_size1, pad1, str1)
+        # if maxpool2d
+        H, W = dim_after_filter(H, kernel_pool, 0, str_pool), dim_after_filter(W, kernel_pool, 0, str_pool) 
+
+        self.conv2 = blockMaxP(n_filters1, n_filters2, act_fn_name, kernel_size2, pad2, str2)
+        H = dim_after_filter(H, kernel_size2, pad2, str2)
+        W = dim_after_filter(W, kernel_size2, pad2, str2)
+        # if maxpool2d
+        H, W = dim_after_filter(H, kernel_pool, 0, str_pool), dim_after_filter(W, kernel_pool, 0, str_pool)
+
+        self.convTr1 = torch.nn.ConvTranspose2d(
+            in_channels = n_filters2, 
+            out_channels = n_filters1, 
+            kernel_size = kernel_pool,
+            stride=kernel_pool)
+        
+        self.convTr2 = torch.nn.ConvTranspose2d(
+            in_channels = n_filters1, 
+            out_channels = chan_in, 
+            kernel_size = kernel_pool,
+            stride=kernel_pool)
+
+
+    def forward(self, x):
+        x = self.conv1(x)
+        x = self.conv2(x)
+        x = self.convTr1(x, output_size = [-1, self.n_filters1, int(self.Hout/2), int(self.Wout/2)])
+        x = self.convTr2(x, output_size = [-1, self.chan_out, self.Hout, self.Wout])
+        return x
+
+
+
+class CNN_basic_cT2(torch.nn.Module):
+    def __init__(self, n_channels: int = 1, 
+        Hin: int = 32, Win: int = 32, 
+        Hout: int = 32, Wout: int = 32,
+        n_filters: list = [5, 5],
+        conv_kern: list = [3, 5],
+        conv_pad: list = [1, 2],
+        act_fn_name="relu",
+        ):
+
+        super().__init__()
+
+        chan_in = n_channels 
+
+        n_filters1, n_filters2 = n_filters
+        kernel_size1, kernel_size2 = conv_kern
+        pad1, pad2 = conv_pad
+        str1, str2 = 1, 1
+
+        kernel_pool, str_pool = 2, 2
+
+        self.Hin = Hin
+        self.Win = Win
+        self.Hout = Hout
+        self.Wout = Wout
+        self.chan_out = chan_in
+        self.n_filters1 = n_filters1
+        self.n_filters2 = n_filters2
+        
+
+        n_outputs = self.Hout* self.Wout
+
+        self.conv1 = blockMaxP(chan_in, n_filters1, act_fn_name, kernel_size1, pad1, str1)
+        H = dim_after_filter(Hin, kernel_size1, pad1, str1)
+        W = dim_after_filter(Win, kernel_size1, pad1, str1)
+        # if maxpool2d
+        H, W = dim_after_filter(H, kernel_pool, 0, str_pool), dim_after_filter(W, kernel_pool, 0, str_pool) 
+
+        self.conv2 = blockMaxP(n_filters1, n_filters2, act_fn_name, kernel_size2, pad2, str2)
+        H = dim_after_filter(H, kernel_size2, pad2, str2)
+        W = dim_after_filter(W, kernel_size2, pad2, str2)
+        # if maxpool2d
+        H, W = dim_after_filter(H, kernel_pool, 0, str_pool), dim_after_filter(W, kernel_pool, 0, str_pool)
+
+        self.convTr = torch.nn.ConvTranspose2d(
+            in_channels = n_filters2, 
+            out_channels = self.chan_out, 
+            kernel_size = kernel_pool*2,
+            stride=str_pool*2)
+
+    def forward(self, x):
+        x = self.conv1(x)
+        x = self.conv2(x)
+        x = self.convTr(x, output_size = [-1, self.chan_out, self.Hout, self.Wout])
+        return x
 
 class CNN_2branch(torch.nn.Module):
     def __init__(self, n_channels: int = 1, 
@@ -179,7 +300,8 @@ class CNN_2branch(torch.nn.Module):
 model_dict={}
 model_dict["CNN_basic"] = CNN_basic
 model_dict["CNN_2branch"] = CNN_2branch
-
+model_dict["CNN_basic_cT"] = CNN_basic_cT
+model_dict["CNN_basic_cT2"] = CNN_basic_cT2
 
 
 
