@@ -30,7 +30,6 @@ if __name__ == "__main__":
     )
 
     # TO load a checkpoint:
-    # model = LitCNN.load_from_checkpoint(checkpoint_path="./checkpoints/model-???.ckpt")
     checkpoint = ModelCheckpoint(
         dirpath='./checkpoints/',         # where to save the checkpoint
         filename=config.SAVE_NAME,        # name of the model
@@ -40,9 +39,7 @@ if __name__ == "__main__":
     )
 
 
-    # model_dict = {}
-    # model_dict["CNN_basic"] = CNN_basic
-    CNN_model = CNNModule(
+    APP_model = CNNModule(
         model_name=config.MODEL_NAME,
         model_dict=model_dict,
         model_hparams={
@@ -94,7 +91,7 @@ if __name__ == "__main__":
         )
 
     # %% FIT / VALIDATE / TEST
-    trainer.fit(CNN_model, dm, ckpt_path=restart_file)
+    trainer.fit(APP_model, dm, ckpt_path=restart_file)
 
     # trainer.validate(model, dm)
     # trainer.test(model, dm)
@@ -106,7 +103,7 @@ if __name__ == "__main__":
     # Reference image, input
     img = dm.reference_image
     # Reference image output
-    img_out = CNN_model(torch.unsqueeze(dm.reference_image, dim=0))
+    img_out = APP_model(torch.unsqueeze(dm.reference_image, dim=0))
     img_out = img_out.reshape(1, config.HOUT, config.WOUT)
     
     # Make grid with input/output, normalizing the values [0,1]
