@@ -130,7 +130,7 @@ if __name__ == "__main__":
     # Reference image, input
     img = dm.reference_image
     # Reference image output
-    img_out = CNN_model(torch.unsqueeze(dm.reference_image, dim=0))
+    img_out = densenet_model(torch.unsqueeze(dm.reference_image, dim=0))
     img_out = img_out.reshape(1, config.HOUT, config.WOUT)
     
     # Make grid with input/output, normalizing the values [0,1]
