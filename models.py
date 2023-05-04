@@ -77,17 +77,11 @@ class CNN_basic(torch.nn.Module):
         n_filters: list = [5, 5],
         conv_kern: list = [3, 5],
         conv_pad: list = [1, 2],
+        conv_str: list = [1, 1],
         act_fn_name="relu",
         ):
 
         super().__init__()
-
-        chan_in = n_channels 
-
-        n_filters1, n_filters2 = n_filters
-        kernel_size1, kernel_size2 = conv_kern
-        pad1, pad2 = conv_pad
-        str1, str2 = 1, 1
 
         kernel_pool, str_pool = 2, 2
 
@@ -95,26 +89,37 @@ class CNN_basic(torch.nn.Module):
         self.Win = Win
         self.Hout = Hout
         self.Wout = Wout
+        self.n_filters = n_filters
+        self.conv_kernels = conv_kern
+        self.conv_pad = conv_pad
+        self.conv_str = conv_str
 
         n_outputs = self.Hout* self.Wout
 
-        self.conv1 = blockMaxP(chan_in, n_filters1, act_fn_name, kernel_size1, pad1, str1)
-        H = dim_after_filter(Hin, kernel_size1, pad1, str1)
-        W = dim_after_filter(Win, kernel_size1, pad1, str1)
-        # if maxpool2d
-        H, W = dim_after_filter(H, kernel_pool, 0, str_pool), dim_after_filter(W, kernel_pool, 0, str_pool) 
+        num_layers = len(self.conv_kernels)
+        
+        layers = []
+        self.layer_cin = []
+        self.layer_cin.append(n_channels)
+        self.layer_cin += self.n_filters[:-1]
 
-        self.conv2 = blockMaxP(n_filters1, n_filters2, act_fn_name, kernel_size2, pad2, str2)
-        H = dim_after_filter(H, kernel_size2, pad2, str2)
-        W = dim_after_filter(W, kernel_size2, pad2, str2)
-        # if maxpool2d
-        H, W = dim_after_filter(H, kernel_pool, 0, str_pool), dim_after_filter(W, kernel_pool, 0, str_pool)
+        H, W = self.Hin, self.Win
+        for layer_idx in range(num_layers):
+            layers.append( blockMaxP( self.layer_cin[layer_idx], self.n_filters[layer_idx], act_fn_name,
+                                     self.conv_kernels[layer_idx], self.conv_pad[layer_idx], self.conv_str[layer_idx])
+                          )
+            H = dim_after_filter(H, self.conv_kernels[layer_idx], self.conv_pad[layer_idx], self.conv_str[layer_idx])
+            W = dim_after_filter(W, self.conv_kernels[layer_idx], self.conv_pad[layer_idx], self.conv_str[layer_idx])
+            # if maxpool2d
+            H = dim_after_filter(H, kernel_pool, 0, str_pool)
+            W = dim_after_filter(W, kernel_pool, 0, str_pool)
+            
+        self.block_layers = nn.Sequential(*layers)
 
-        self.fc = torch.nn.Linear(n_filters2*H*W, n_outputs)
+        self.fc = torch.nn.Linear(self.n_filters[-1]*H*W, n_outputs)
 
     def forward(self, x):
-        x = self.conv1(x)
-        x = self.conv2(x)
+        x = self.block_layers(x)
         x = x.view(x.shape[0], -1)
         x = self.fc(x)
         x = x.view(-1, 1, self.Hout, self.Wout)

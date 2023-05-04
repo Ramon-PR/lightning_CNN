@@ -1,7 +1,7 @@
 # Training hyperparameters
 LEARNING_RATE = 1e-3
 BATCH_SIZE = 500
-NUM_EPOCHS = 100
+NUM_EPOCHS = 10
 
 # Dataset
 DATA_DIR = r"C:\Users\keris\Desktop\Postdoc"
@@ -13,12 +13,13 @@ NUM_WORKERS = 4
 
 # Model
 N_CHANNELS, HIN, WIN, HOUT, WOUT = 1, 32, 32, 32, 32
-N_FILTERS = [10, 5]
-CONV_KERN = [3, 5]
-CONV_PAD  = [1, 2]
+N_FILTERS = [5, 5, 5]
+CONV_KERN = [3, 5, 5]
+CONV_PAD  = [1, 2, 2]
+CONV_STR  = [1, 1, 1]
 
 MODEL_NAME = "CNN_basic"
-SAVE_NAME = f"{MODEL_NAME}_{N_FILTERS[0]}_{N_FILTERS[1]}"
+SAVE_NAME = f"{MODEL_NAME}_{N_FILTERS[0]}_{N_FILTERS[1]}_2"
 VAR2MONITOR = "train_loss"
 
 
