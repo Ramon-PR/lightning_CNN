@@ -370,11 +370,14 @@ class CNN_2B(torch.nn.Module):
             layersB2.append( blockC( self.layer_cinB2[layer_idx], self.n_filtersB2[layer_idx], act_fn_name,
                                      self.conv_kernelsB2[layer_idx], self.conv_padB2[layer_idx], self.conv_str[layer_idx])
                           )
-            H1 = dim_after_filter(H1, self.conv_kernelsB1[layer_idx], self.conv_padB2[layer_idx], self.conv_str[layer_idx])
-            W1 = dim_after_filter(W1, self.conv_kernelsB1[layer_idx], self.conv_padB2[layer_idx], self.conv_str[layer_idx])
+            H1 = dim_after_filter(H1, self.conv_kernelsB1[layer_idx], self.conv_padB1[layer_idx], self.conv_str[layer_idx])
+            W1 = dim_after_filter(W1, self.conv_kernelsB1[layer_idx], self.conv_padB1[layer_idx], self.conv_str[layer_idx])
             H2 = dim_after_filter(H2, self.conv_kernelsB2[layer_idx], self.conv_padB2[layer_idx], self.conv_str[layer_idx])
             W2 = dim_after_filter(W2, self.conv_kernelsB2[layer_idx], self.conv_padB2[layer_idx], self.conv_str[layer_idx])
             
+        self.H1, self.W1 = H1, W1
+        self.H2, self.W2 = H2, W2
+    
         self.branch_1 = nn.Sequential(*layersB1)
         self.branch_2 = nn.Sequential(*layersB2)
 
