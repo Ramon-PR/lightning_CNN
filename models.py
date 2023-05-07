@@ -26,6 +26,12 @@ class MinPool2d(torch.nn.Module):
             self.kernel_size, self.stride, self.padding, self.dilation, self.ceil_mode is not None)
 
 
+def blockC(chan_in, chan_out, act_fn_name="relu", kernel_size=3, pad1=1, str1=1):
+    return torch.nn.Sequential(
+        torch.nn.Conv2d(chan_in, chan_out, kernel_size, padding=pad1, stride=str1),
+        act_fn_by_name[act_fn_name](),
+    )
+
 
 def blockMaxP(chan_in, chan_out, act_fn_name="relu", kernel_size=3, pad1=1, str1=1, kernel_pool=2, str_pool=2):
     return torch.nn.Sequential(
@@ -313,11 +319,83 @@ class CNN_2branch(torch.nn.Module):
         return y
 
 
+
+class CNN_2B(torch.nn.Module):
+    def __init__(self, n_channels: int = 1, 
+        Hin: int = 32, Win: int = 32, 
+        Hout: int = 32, Wout: int = 32,
+        n_filtersB1: list = [5, 5],
+        n_filtersB2: list = [5, 5],
+        conv_kernB1: list = [3, 3],
+        conv_kernB2: list = [5, 5],
+        conv_padB1: list = [1, 1],
+        conv_padB2: list = [2, 2],
+        conv_str: list = [1, 1],
+        act_fn_name="relu",
+        ):
+
+        super().__init__()
+
+        self.Hin = Hin
+        self.Win = Win
+        self.Hout = Hout
+        self.Wout = Wout
+        self.n_filtersB1 = n_filtersB1
+        self.n_filtersB2 = n_filtersB2
+        self.conv_kernelsB1 = conv_kernB1
+        self.conv_kernelsB2 = conv_kernB2
+        self.conv_padB1 = conv_padB1
+        self.conv_padB2 = conv_padB2
+        self.conv_str = conv_str
+
+        n_outputs = self.Hout* self.Wout
+
+        num_layers = len(self.conv_kernelsB1)
+        
+        layersB1 = []
+        layersB2 = []
+        self.layer_cinB1 = []
+        self.layer_cinB1.append(n_channels)
+        self.layer_cinB1 += self.n_filtersB1[:-1]
+        self.layer_cinB2 = []
+        self.layer_cinB2.append(n_channels)
+        self.layer_cinB2 += self.n_filtersB2[:-1]
+
+        H1, W1 = self.Hin, self.Win
+        H2, W2 = self.Hin, self.Win
+        for layer_idx in range(num_layers):
+            layersB1.append( blockC( self.layer_cinB1[layer_idx], self.n_filtersB1[layer_idx], act_fn_name,
+                                     self.conv_kernelsB1[layer_idx], self.conv_padB1[layer_idx], self.conv_str[layer_idx])
+                          )
+            layersB2.append( blockC( self.layer_cinB2[layer_idx], self.n_filtersB2[layer_idx], act_fn_name,
+                                     self.conv_kernelsB2[layer_idx], self.conv_padB2[layer_idx], self.conv_str[layer_idx])
+                          )
+            H1 = dim_after_filter(H1, self.conv_kernelsB1[layer_idx], self.conv_padB2[layer_idx], self.conv_str[layer_idx])
+            W1 = dim_after_filter(W1, self.conv_kernelsB1[layer_idx], self.conv_padB2[layer_idx], self.conv_str[layer_idx])
+            H2 = dim_after_filter(H2, self.conv_kernelsB2[layer_idx], self.conv_padB2[layer_idx], self.conv_str[layer_idx])
+            W2 = dim_after_filter(W2, self.conv_kernelsB2[layer_idx], self.conv_padB2[layer_idx], self.conv_str[layer_idx])
+            
+        self.branch_1 = nn.Sequential(*layersB1)
+        self.branch_2 = nn.Sequential(*layersB2)
+
+        self.fc = torch.nn.Linear(self.n_filtersB1[-1]*H1*W1 + self.n_filtersB2[-1]*H2*W2, n_outputs)
+
+    def forward(self, x): 
+        x1 = self.branch_1(x)
+        x2 = self.branch_2(x)
+
+        y = torch.cat((x1.view(x1.shape[0], -1), x2.view(x2.shape[0], -1)), -1)    
+
+        y = self.fc(y)
+        y = y.view(-1, 1, self.Hout, self.Wout)
+        return y
+
 model_dict={}
 model_dict["CNN_basic"] = CNN_basic
 model_dict["CNN_2branch"] = CNN_2branch
 model_dict["CNN_basic_cT"] = CNN_basic_cT
 model_dict["CNN_basic_cT2"] = CNN_basic_cT2
+model_dict["CNN_2B"] = CNN_2B
 
 
 
