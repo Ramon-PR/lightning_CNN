@@ -55,14 +55,18 @@ class RirDataModule(pl.LightningDataModule):
             
             self.zea_train, self.zea_val = random_split(zea_full, [0.8, 0.2])
             # Reference image (first target from the dataset)
-            self.reference_target = zea_full.__getitem__(0)[1]
-            self.reference_input = zea_full.__getitem__(0)[0]
+            temp = zea_full.__getitem__(0)
+            self.reference_input = temp[0]
+            self.reference_target= temp[1]
 
         # Assign test dataset for use in dataloader(s)
         if stage == "test":
             self.zea_test = ZeaDataset(self.root, files = config.FILES_VAL, param_downsamp = config.PARAM_DOWNSAMPLING,
                 f_downsamp_RIR = unif_downsamp_RIR,
                 input_transform = True, target_transform = None)
+            temp = self.zea_test.__getitem__(0)
+            self.test_input = temp[0]
+            self.test_target= temp[1]
 
     def train_dataloader(self):
         return DataLoader(self.zea_train, batch_size=self.batch_size, shuffle=True,
