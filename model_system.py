@@ -61,8 +61,10 @@ class CNNModule(pl.LightningModule):
     def _common_step(self, batch, batch_idx):
         # training_step defines the train loop.
         # it is independent of forward
-        image3, target, _, _  = batch
-        y_pred = self.model(image3)
+        image_input = batch[0]
+        target = batch[1]
+
+        y_pred = self.model(image_input)
         
         loss = self.criterion(y_pred, target)
         return loss
@@ -121,7 +123,3 @@ class CallbackLog_loss_per_epoch(pl.Callback):
         
         # free up the memory
         pl_module.training_step_outputs.clear()
-        # if(trainer.current_epoch==1):
-            # sampleImg=torch.rand((1,1,config.HIN,config.WIN))
-            # trainer.logger.experiment.add_graph(pl_module, sampleImg)
-

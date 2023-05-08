@@ -13,7 +13,14 @@ from torch.utils.data import random_split, DataLoader
 from module_functions_DataBases_RIR import unif_downsamp_RIR #, rand_downsamp_RIR
 import config
 import torchvision
-from Databases_RIR import ZeaDataset
+
+if config.N_CHANNELS == 1:
+    from Databases_RIR import ZeaDataset_C1 as ZeaDataset
+elif config.N_CHANNELS == 3:
+    from Databases_RIR import ZeaDataset_C3 as ZeaDataset
+else:
+    raise ValueError("Datamodules implemented for N_CHANNELS = 1 or 3. Change N_CHANNELS in config.py")
+
 
 
 class RirDataModule(pl.LightningDataModule):
