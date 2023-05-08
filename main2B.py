@@ -110,10 +110,16 @@ if __name__ == "__main__":
     img_out = model(torch.unsqueeze(dm.reference_input, dim=0))
     img_out = img_out.reshape(1, config.HOUT, config.WOUT)
     
+    dm.setup("test")
+    test_inp_image = dm.test_input
+    test_targ_image = dm.test_target
+    test_out_image = model(test_inp_image.unsqueeze(dim=0))
+    test_out_image = test_out_image.reshape(1, config.HOUT, config.WOUT)
+    
     # Make grid with input/output, normalizing the values [0,1]
-    grid = torchvision.utils.make_grid([img, img_out], normalize=True)
+    grid = torchvision.utils.make_grid([img, img_out, test_targ_image, test_out_image], normalize=True)
     # Log the image
-    trainer.logger.experiment.add_image(f"input/output (epoch={trainer.current_epoch})", 
+    trainer.logger.experiment.add_image(f"input/output train/test (epoch={trainer.current_epoch})", 
                                         grid, trainer.current_epoch, dataformats="CHW")
 
     # %%query training/validation/test time (in seconds)
