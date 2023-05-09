@@ -445,6 +445,77 @@ class CNN_1B(torch.nn.Module):
         x = self.fc(x)
         x = x.view(-1, 1, self.Hout, self.Wout)
         return x
+
+
+class CNN_A(torch.nn.Module):
+    def __init__(self, n_channels: int = 1, 
+        Hin: int = 32, Win: int = 32, 
+        Hout: int = 32, Wout: int = 32,
+        n_filters: list = [5, 5],
+        conv_kern: list = [3, 5],
+        conv_pad: list = [1, 2],
+        conv_str: list = [1, 1],
+        act_fn_name="relu",
+        ):
+
+        super().__init__()
+
+        kernel_pool, str_pool = 2, 2
+
+        self.Hin = Hin
+        self.Win = Win
+        self.Hout = Hout
+        self.Wout = Wout
+        self.n_filters = n_filters
+        self.conv_kernels = conv_kern
+        self.conv_pad = conv_pad
+        self.conv_str = conv_str
+
+        n_outputs = self.Hout* self.Wout
+
+        num_layers = len(self.conv_kernels)
+        
+        layers = []
+        self.layer_cin = []
+        self.layer_cin.append(n_channels)
+        self.layer_cin += self.n_filters[:-1]
+
+        H, W = self.Hin, self.Win
+        for layer_idx in range(num_layers):
+            layers.append( blockC( self.layer_cin[layer_idx], self.n_filters[layer_idx], act_fn_name,
+                                     self.conv_kernels[layer_idx], self.conv_pad[layer_idx], self.conv_str[layer_idx])
+                          )
+            H = dim_after_filter(H, self.conv_kernels[layer_idx], self.conv_pad[layer_idx], self.conv_str[layer_idx])
+            W = dim_after_filter(W, self.conv_kernels[layer_idx], self.conv_pad[layer_idx], self.conv_str[layer_idx])
+            
+        self.block_layers = nn.Sequential(*layers)
+
+        self.start_layer = nn.Sequential(
+            torch.nn.ConvTranspose2d(
+                in_channels = self.layer_cin[0], 
+                out_channels = self.n_filters[0],
+                kernel_size = 3,
+                stride=1),
+            torch.nn.Conv2d(
+                in_channels = self.n_filters[0], 
+                out_channels = self.layer_cin[0],
+                kernel_size = 3,
+                stride=1)
+            )
+
+        self.fc = torch.nn.Linear(self.n_filters[-1]*H*W, n_outputs)
+
+    def forward(self, x):
+        x = self.start_layer(x)
+        x = self.block_layers(x)
+        x = x.view(x.shape[0], -1)
+        x = self.fc(x)
+        x = x.view(-1, 1, self.Hout, self.Wout)
+        return x
+
+
+
+
     
 model_dict={}
 model_dict["CNN_basic"] = CNN_basic
@@ -453,6 +524,7 @@ model_dict["CNN_basic_cT"] = CNN_basic_cT
 model_dict["CNN_basic_cT2"] = CNN_basic_cT2
 model_dict["CNN_2B"] = CNN_2B
 model_dict["CNN_1B"] = CNN_1B
+model_dict["CNN_A"] = CNN_A
 
 
 
