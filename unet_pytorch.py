@@ -72,11 +72,11 @@ class decoder_block(nn.Module):
 
 
 class build_unet(nn.Module):
-    def __init__(self):
+    def __init__(self, c_in):
         super().__init__()
 
         """ Encoder """
-        self.e1 = encoder_block(3, 64)
+        self.e1 = encoder_block(c_in, 64)
         self.e2 = encoder_block(64, 128)
         self.e3 = encoder_block(128, 256)
         self.e4 = encoder_block(256, 512)

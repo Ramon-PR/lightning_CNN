@@ -119,7 +119,7 @@ class UNetModule(pl.LightningModule):
         # Exports the hyperparameters to a YAML file, and create "self.hparams" namespace
         self.save_hyperparameters()
         # Create model
-        self.model = build_unet()
+        self.model = build_unet(config.N_CHANNELS)
         # Create loss module
         self.criterion = torchmetrics.MeanSquaredError()        
         # Example input for visualizing the graph in Tensorboard
