@@ -2,6 +2,7 @@ import config
 from dataset import RirDataModule
 from model_system import CNNModule, CallbackLog_loss_per_epoch
 from models import model_dict
+from unet_pytorch import model_dict
 
 
 import lightning.pytorch as pl

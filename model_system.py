@@ -2,7 +2,6 @@ import lightning.pytorch as pl
 import torch
 import torchmetrics
 import config
-from unet_pytorch import build_unet
 
 # Function for setting the seed
 pl.seed_everything(42)
@@ -103,95 +102,6 @@ class CNNModule(pl.LightningModule):
         # Logging to TensorBoard (if installed) by default
         self.log("test_loss", loss)
         return loss
-
-
-class UNetModule(pl.LightningModule):
-    def __init__(self, model_name, model_dict, model_hparams, optimizer_name, optimizer_hparams):
-        """
-        Args:
-            model_name: Name of the model/CNN to run. Used for creating the model (see function below)
-            model_hparams: Hyperparameters for the model, as dictionary.
-            optimizer_name: Name of the optimizer to use. Currently supported: Adam, SGD
-            optimizer_hparams: Hyperparameters for the optimizer, as dictionary. This includes learning rate, weight decay, etc.
-        """
-
-        super().__init__()
-        # Exports the hyperparameters to a YAML file, and create "self.hparams" namespace
-        self.save_hyperparameters()
-        # Create model
-        self.model = build_unet(config.N_CHANNELS)
-        # Create loss module
-        self.criterion = torchmetrics.MeanSquaredError()        
-        # Example input for visualizing the graph in Tensorboard
-        self.example_input_array = torch.zeros((1, config.N_CHANNELS, config.HIN, config.WIN), dtype=torch.float32)
-        self.training_step_outputs = []
-
-    def forward(self, imgs):
-        # Forward function that is run when visualizing the graph
-        return self.model(imgs)
-
-    def configure_optimizers(self):
-        # We will support Adam or SGD as optimizers.
-        if self.hparams.optimizer_name == "Adam":
-            # AdamW is Adam with a correct implementation of weight decay (see here
-            # for details: https://arxiv.org/pdf/1711.05101.pdf)
-            optimizer = torch.optim.AdamW(self.parameters(), **self.hparams.optimizer_hparams)
-        elif self.hparams.optimizer_name == "SGD":
-            optimizer = torch.optim.SGD(self.parameters(), **self.hparams.optimizer_hparams)
-        else:
-            assert False, f'Unknown optimizer: "{self.hparams.optimizer_name}"'
-
-        # We will reduce the learning rate by 0.1 after 100 and 150 epochs
-        # scheduler = torch.optim.lr_scheduler.MultiStepLR(optimizer, milestones=[100, 150], gamma=0.1)
-        return [optimizer]#, [scheduler]
-
-    def _common_step(self, batch, batch_idx):
-        # training_step defines the train loop.
-        # it is independent of forward
-        image_input = batch[0]
-        target = batch[1]
-
-        y_pred = self.model(image_input)
-        
-        loss = self.criterion(y_pred, target)
-        return loss
-
-
-    def training_step(self, batch, batch_idx):
-        # training_step defines the train loop.
-        # it is independent of forward
-        loss = self._common_step(batch, batch_idx)
-        
-        # Logging to TensorBoard (if installed) by default
-        self.log("train_loss", loss, on_step=False ,on_epoch=True)
-        # self.log_dict({'train_loss': loss}, 
-                      # on_step=True, on_epoch=True, 
-                      # prog_bar=True, logger=True)
-        self.training_step_outputs.append(loss)
-        
-        return loss
-
-
-    def validation_step(self, batch, batch_idx):
-        # validation_step defines the validation loop.
-        # it is independent of forward
-        loss = self._common_step(batch, batch_idx)
-        
-        # Logging to TensorBoard (if installed) by default
-        self.log("val_loss", loss)
-        return loss
-
-
-    def test_step(self, batch, batch_idx):
-        # test_step defines the test loop.
-        # it is independent of forward
-        loss = self._common_step(batch, batch_idx)
-        
-        # Logging to TensorBoard (if installed) by default
-        self.log("test_loss", loss)
-        return loss
-
-
 
 
 class CallbackLog_loss_per_epoch(pl.Callback):

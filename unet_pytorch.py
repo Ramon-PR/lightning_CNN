@@ -71,12 +71,12 @@ class decoder_block(nn.Module):
         return x
 
 
-class build_unet(nn.Module):
-    def __init__(self, c_in):
+class UNet(nn.Module):
+    def __init__(self, n_channels, **args):
         super().__init__()
 
         """ Encoder """
-        self.e1 = encoder_block(c_in, 64)
+        self.e1 = encoder_block(n_channels, 64)
         self.e2 = encoder_block(64, 128)
         self.e3 = encoder_block(128, 256)
         self.e4 = encoder_block(256, 512)
@@ -114,6 +114,13 @@ class build_unet(nn.Module):
 
         return outputs
 
+
+if 'model_dict' not in locals():
+    model_dict = {}  # Crear el diccionario vacío si no existe
+
+model_dict["UNet"] = UNet
+
+
 if __name__ == "__main__":
     # inputs = torch.randn((2, 32, 256, 256))
     # e = encoder_block(32, 64)
@@ -125,6 +132,6 @@ if __name__ == "__main__":
     # print(y.shape)
 
     inputs = torch.randn((2, 3, 512, 512))
-    model = build_unet()
+    model = UNet()
     y = model(inputs)
     print(y.shape)

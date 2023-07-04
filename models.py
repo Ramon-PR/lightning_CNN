@@ -574,8 +574,9 @@ class CNN_last_filters(torch.nn.Module):
 
 
 
-    
-model_dict={}
+if 'model_dict' not in locals():
+    model_dict = {}  # Crear el diccionario vacío si no existe
+
 model_dict["CNN_basic"] = CNN_basic
 model_dict["CNN_2branch"] = CNN_2branch
 model_dict["CNN_basic_cT"] = CNN_basic_cT
